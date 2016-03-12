@@ -1,0 +1,36 @@
+OOM Killer controller
+--- ------ ----------
+
+The OOM killer kills the process based on a set of heuristics such that only
+minimum amount of work done will be lost, a large amount of memory would be
+recovered and minimum no of processes are killed.
+
+The user can adjust the score used to select the processes to be killed using
+/proc/<pid>/oom_adj. Giving it a high score will increase the likelihood of 
+this process being killed by the oom-killer.  Valid values are in the range 
+-16 to +15, plus the special value -17, which disables oom-killing altogether
+for that process.
+
+But it is very difficult to suggest an order among tasks to be killed during
+Out Of Memory situation. The OOM Killer controller aids in doing that.
+
+USAGE
+-----
+
+Mount the oom controller by passing 'oom' when mounting cgroups. Echo
+a value in oom.priority file to change the order. The oom.effective_priority
+is calculated as the highest oom.priority along its path. The oom killer would
+kill all the processes in a cgroup with a higher oom.effective_priority before
+killing a process in a cgroup with lower oom.effective_priority value. Among
+those tasks with same oom.effective_priority value, the usual badness
+heuristics would be applied. The /proc/<pid>/oom_adj still helps adjusting the
+oom killer score. Also having oom.effective_priority = 0 would disable oom
+killing for the tasks in that cgroup.
+
+Note: If this is used without proper consideration, innocent processes may
+get killed unnecesarily.
+
+CPUSET constrained OOM:
+Setting oom.cpuset_constraint=1 would disable the ordering during a cpuset
+constrained oom. Setting oom.cpuset_constraint=0 would not distinguish
+between a cpuset constrained oom and system wide oom.
